@@ -1,0 +1,63 @@
+<html>
+<head>
+  <title>Stadtklimaatlas - Übersicht aller Klimagutachten seit 2001</title>
+  <meta name="keywords" content="Stadtklimaatlas, Klimagutachten, Freiraumplanung,  Mannheim">
+  <meta name="description" content="Diese Karte zeigt die Ausdehnung aller Klimagutachten seit 2001 des Stadtklimaatlas Mannheim.">
+  <meta name="author" content="Bodo Rose, Christopher Barron">
+  
+  <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"/>
+  
+  <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+  <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+  
+  <style>
+    #map{ height: 100%; }
+  </style>
+</head>
+<body>
+
+  <div id="map"></div>
+
+  <script>
+  
+  // Karte initialisieren, maximale und minimale Zoomstufe setzen
+  var map = L.map('map', {maxZoom: 18, minZoom: 12}).setView([49.5, 8.5], 11);
+
+  // Hintergrundkacheln einbinden. Eine gute Übersicht gibt es unter http://leaflet-extras.github.io/leaflet-providers/preview/index.html
+		L.tileLayer('http://{s}.tile.openstreetmap.de/tiles/osmde/{z}/{x}/{y}.png', {
+			maxZoom: 18,
+			attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target=\"_blank\">OpenStreetMap</a>'
+		}).addTo(map);
+  
+  // Eigene Attribution hinzufügen
+  map.attributionControl.addAttribution('Klimagutachten &copy; <a href="https://www.mannheim.de/stadt-gestalten/stadtklimaatlas" target=\"_blank\">Stadtklimaatlas Mannheim</a>');
+
+  // GeoJSON-File einbinden und Polygone stylen
+  $.getJSON("klimagutachten_2001.geojson",function(klimagutachten){
+    L.geoJson( klimagutachten, {
+		style: function(feature){
+			return {
+				color: "#e60000",
+				weight: 4,
+				fillColor: "#e60000",
+				fillOpacity: .3
+			};
+		},
+      
+		// Layer-Pop-Up aufrufen
+		onEachFeature: function( feature, layer ){
+			layer.bindPopup("<strong> Klimagutachten \"" + feature.properties.Kurzname_P + "\" (" + feature.properties.Jahr + ")" + "</strong><br/><br/>" + 
+							"Zum vollständigen Gutachten: " +  " <a href=" + feature.properties.url + " target=\"_blank\">" + feature.properties.url + "</a>" )
+		}																											
+    }).addTo(map);
+  });
+
+  // Passt die Kartenansicht an. Sollte das Pop-Up außerhalb der Ansicht liegen, wird der Ausschnitt angepasst.
+  klimagutachten.on('ready', function() {
+    map.fitBounds(klimagutachten.getBounds());
+  });
+  
+  </script>
+</body>
+</html>
+	

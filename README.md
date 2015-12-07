@@ -13,3 +13,7 @@ Vorarbeiten:
 3) Überlagerte Polygone: Je weiter unten im GeoJSON das Feature, desto weiter oben als Layer in leafleat
 
 4) Ggf. Unformatiertes GeoJSON sauber formatieren mit https://jsonformatter.curiousconcept.com/
+
+
+Sollte, warum auch immer, X und Y Koordinaten vertauscht werden müssen:
+"C:\Program Files\GDAL\ogr2ogr.exe" -f GeoJSON -s_srs "+proj=latlong +datum=WGS84 +axis=neu +wktext" -t_srs "+proj=latlong +datum=WGS84 +axis=enu +wktext" W:\02_Anwendungen\Klima_2010\leaflet\klimagutachten_2001_rheinau.geojson W:\02_Anwendungen\Klima_2010\leaflet\klimagutachten_wgs84.shp 

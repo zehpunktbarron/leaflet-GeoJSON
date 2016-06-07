@@ -1,7 +1,7 @@
 <html>
 <head>
   <title>Stadtklimaatlas - Übersicht aller Klimagutachten seit 2001</title>
-  <meta name="keywords" content="Stadtklimaatlas, Klimagutachten, Freiraumplanung,  Mannheim">
+  <meta name="keywords" content="Stadtklimaatlas, Klimagutachten, Freiraumplanung, Mannheim">
   <meta name="description" content="Diese Karte zeigt die Ausdehnung aller Klimagutachten seit 2001 des Stadtklimaatlas Mannheim.">
   <meta name="author" content="Bodo Rose, Christopher Barron">
   
@@ -11,17 +11,27 @@
   <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
   
   <style>
-    #map{ height: 100%; }
+    #map{ height: 90%; width: 996px; margin:0px 400px}
   </style>
 </head>
 <body>
+
+  <!-- Logo Stadtklimaatlas-->
+  <a href="https://www.mannheim.de/stadt-gestalten/stadtklimaatlas" style="margin:0px 400px 0px"> 
+	<img src="logo_Stadtklimaatlas.png" height="5%" alt="Logo Stadtklimaatlas Mannheim" />
+  </a>
 
   <div id="map"></div>
 
   <script>
   
+  // BBox setzen für Mannheim um Verschieben über die Gemarkungsgrenze zu verhindern.
+  var southWest = L.latLng(49.3, 8.35),
+	northEast = L.latLng(49.6, 8.7),
+    bounds = L.latLngBounds(southWest, northEast);
+  
   // Karte initialisieren, maximale und minimale Zoomstufe setzen
-  var map = L.map('map', {maxZoom: 18, minZoom: 12}).setView([49.5, 8.5], 11);
+  var map = L.map('map', {maxBounds: bounds, maxZoom: 18, minZoom: 12}).setView([49.48, 8.5], 11);
 
   // Hintergrundkacheln einbinden. Eine gute Übersicht gibt es unter http://leaflet-extras.github.io/leaflet-providers/preview/index.html
 		L.tileLayer('http://{s}.tile.openstreetmap.de/tiles/osmde/{z}/{x}/{y}.png', {
@@ -32,7 +42,7 @@
   // Eigene Attribution hinzufügen
   map.attributionControl.addAttribution('Klimagutachten &copy; <a href="https://www.mannheim.de/stadt-gestalten/stadtklimaatlas" target=\"_blank\">Stadtklimaatlas Mannheim</a>');
 
-  // GeoJSON-File einbinden und Polygone stylen
+  // GeoJSON einbinden und Polygone stylen
   $.getJSON("klimagutachten_2001.geojson",function(klimagutachten){
     L.geoJson( klimagutachten, {
 		style: function(feature){
@@ -44,14 +54,42 @@
 			};
 		},
       
+
 		// Layer-Pop-Up aufrufen
 		onEachFeature: function( feature, layer ){
-			layer.bindPopup("<strong> Klimagutachten \"" + feature.properties.Kurzname_P + "\" (" + feature.properties.Jahr + ")" + "</strong><br/><br/>" + 
-							"Zum vollständigen Gutachten: " +  " <a href=" + feature.properties.url + " target=\"_blank\">" + feature.properties.url + "</a>" )
+		
+		// Wenn es zwei Gutachten auf einer Fläche gibt, dann:
+		//If: Werte für das erste Gutachten
+		var Gutachten_2 = feature.properties.Kurzname_2;
+		if (Gutachten_2 == null) {
+			Gutachten_2 = "";
+			var Jahr_2 = ""
+			var KlammerAuf = "";
+			var KlammerZuUndUmbruch = "";
+			var url_2 = ""
+		} else {
+		//Else: Werte für das mögliche zweite Gutachten
+			var Gutachten_2 = "<br/> <br/>" + "Klimagutachten \"" + feature.properties.Kurzname_2 + "\"";
+			Jahr_2 = feature.properties.Jahr_2;
+			KlammerAuf="&nbsp(";
+			KlammerZuUndUmbruch="):" + "</br>";
+			url_2 = "<a href=" + feature.properties.url_2 + " target=\"_blank\">" + feature.properties.url_2;
+		};
+			
+		layer.bindPopup("<strong> Klimagutachten \"" + feature.properties.Kurzname_P + "\" (" + feature.properties.Jahr + "): " + "</strong></br>" +
+						"<a href=" + feature.properties.url + " target=\"_blank\">" + feature.properties.url + "</a>" +
+						
+						//Mögliches zweites Gutachten
+						"<strong>" + Gutachten_2 + KlammerAuf + Jahr_2 + KlammerZuUndUmbruch +"</strong>" +
+						url_2
+						)
 		}																											
     }).addTo(map);
   });
-
+  
+  // Maßstabsbalken
+  L.control.scale({metric: true, imperial: false}).addTo(map);
+  
   // Passt die Kartenansicht an. Sollte das Pop-Up außerhalb der Ansicht liegen, wird der Ausschnitt angepasst.
   klimagutachten.on('ready', function() {
     map.fitBounds(klimagutachten.getBounds());
@@ -60,4 +98,3 @@
   </script>
 </body>
 </html>
-	
